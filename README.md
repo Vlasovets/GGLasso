@@ -2,7 +2,7 @@
 
 [![PyPI version fury.io](https://badge.fury.io/py/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
 [![PyPI license](https://img.shields.io/pypi/l/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
-[![Python version](https://img.shields.io/badge/python-3.6%20%7C%203.7%20%7C%203.8%20%7C%203.9-blue)](https://www.python.org/)
+[![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03865/status.svg)](https://doi.org/10.21105/joss.03865)
 [![arXiv](https://img.shields.io/badge/arXiv-2011.00898-b31b1b.svg)](https://arxiv.org/abs/2110.10521)
@@ -15,11 +15,16 @@ Graphical Lasso problems. <br>
 
 ## Getting started
 
-### Install via pip
+### Install via pip/conda
 
-The package is available on pip and can be installed with
+The package is available on pip and conda and can be installed with
 
     pip install gglasso
+
+or
+
+    conda install -c conda-forge gglasso
+
 
 ### Install from source
 
@@ -36,9 +41,9 @@ Test your installation with
 
 ### Advanced options
 
-When installing from source, you can also install dependencies with `conda` via the command
+If you want to create a conda environment with full development dependencies (for building docs, testing etc), run:
 
-	$ while read requirement; do conda install --yes $requirement || pip install $requirement; done < requirements.txt
+	conda env create -f environment.yml
 
 If you wish to install `gglasso` in developer mode, i.e. not having to reinstall `gglasso` everytime the source code changes (either by remote or local changes), run
 
@@ -51,18 +56,22 @@ If you wish to install `gglasso` in developer mode, i.e. not having to reinstall
 
 ## Algorithms
 
-`GGLasso` contains algorithms for Single and Multiple Graphical Lasso problems. Moreover, it allows to model latent variables (Latent variable Graphical Lasso) in order to estimate a precision matrix of type **sparse - low rank**. The following algorithms are contained in the package.
-<br>
-1) ADMM for Single Graphical Lasso<br>
+`GGLasso` contains algorithms for solving a multitude of Graphical Lasso problem formulations. For all the details, we refer to the [solver overview in our documentation](https://gglasso.readthedocs.io/en/latest/solvers-overview.html).
 
-2) ADMM for Group and Fused Graphical Lasso<br>
-The algorithm was proposed in [2] and [3]. To use this, import `ADMM_MGL` from `gglasso/solver/admm_solver`.<br>
+The package includes solvers for the following problems:<br>
 
-3) A Proximal Point method for Group and Fused Graphical Lasso<br>
-We implement the PPDNA Algorithm like proposed in [4]. To use this, import `warmPPDNA` from `gglasso/solver/ppdna_solver`.<br>
+- **Single Graphical Lasso**<br>
 
-4) ADMM method for Group Graphical Lasso where the features/variables are non-conforming<br>
-Method for problems where not all variables exist in all instances/datasets.  To use this, import `ext_ADMM_MGL` from `gglasso/solver/ext_admm_solver`.<br>
+- **Group and Fused Graphical Lasso**<br>
+We implemented the ADMM (see [2] and [3]) and a proximal point algorithm (see [4]). 
+
+- **Non-conforming Group Graphical Lasso**<br>
+A Group Graphical Lasso problem where not all variables exist in all instances/datasets.  
+
+- **Functional Graphical Lasso**<br>
+A variant of Graphical Lasso where each variables has a functional representation (e.g. by Fourier coefficients).
+
+Moreover, for all problem formulation the package allows to model latent variables (Latent variable Graphical Lasso) in order to estimate a precision matrix of type *sparse - low rank*.
 
 ## Citation
 

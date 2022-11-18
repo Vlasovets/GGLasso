@@ -35,16 +35,16 @@ def lambda_grid(l1, l2 = None, w2 = None):
     idea: the grid goes from higher to smaller values when going down/right
     """   
     
-    assert np.all(l2!=None) | np.all(w2!=None), "Either a range of lambda2 or w2 values have to be specified"
-    if np.all(w2!=None):
+    assert np.all(l2 is not None) | np.all(w2 is not None), "Either a range of lambda2 or w2 values have to be specified"
+        
+    if np.all(l2 is not None):
+        L1, L2 = np.meshgrid(l1,l2)
+    else:
         l1grid, w2grid = np.meshgrid(l1,w2)
         L2 = lambda_parametrizer(l1grid, w2grid)
         L1 = l1grid.copy()
-    elif np.all(l2!=None):
-        L1, L2 = np.meshgrid(l1,l2)
-        w2 = None
         
-    return L1.squeeze(), L2.squeeze(), w2
+    return L1.squeeze(), L2.squeeze()
 
 def grid_search(solver, S, N, p, reg, l1, l2 = None, w2 = None, method= 'eBIC', gamma = 0.3, \
                 G = None, latent = False, mu_range = None, ix_mu = None, thresholding = False, tol = 1e-7, rtol = 1e-7, verbose = False):
@@ -121,7 +121,7 @@ def grid_search(solver, S, N, p, reg, l1, l2 = None, w2 = None, method= 'eBIC', 
     if latent:
         assert np.all(mu_range > 0)
       
-    L1, L2, W2 = lambda_grid(l1, l2, w2)
+    L1, L2 = lambda_grid(l1, l2, w2)
     
     if verbose:
         print("Grid of lambda1/lambda2:")
@@ -427,7 +427,8 @@ def K_single_grid(S, lambda_range, N, method = 'eBIC', gamma = 0.3, latent = Fal
 
 
 def single_grid_search(S, lambda_range, N, method = 'eBIC', gamma = 0.3, latent = False, mu_range = None,\
-                       thresholding = False, use_block = True, store_all = True, tol = 1e-7, rtol = 1e-7):
+                       thresholding = False, use_block = True, store_all = True, tol = 1e-7, rtol = 1e-7,
+                       lambda1_mask = None):
     """
     method for model selection for SGL problem, doing grid search and selection via eBIC or AIC
 
@@ -457,6 +458,9 @@ def single_grid_search(S, lambda_range, N, method = 'eBIC', gamma = 0.3, latent 
         Tolerance for the primal residual used for the solver at each grid point. The default is 1e-7.
     rtol : float, positive, optional
         Tolerance for the dual residual used for the solver at each grid point. The default is 1e-7.
+    lambda1_mask : array (p,p), non-negative, optional
+        A mask for the regularization parameter. If specified, the problem is solved with the element-wise regularization strength ``lambda1 * lambda1_mask``.
+        The value of the mask is unchanged throughout the grid search (only ``lambda1`` is changed).
     
     
     Returns
@@ -504,6 +508,9 @@ def single_grid_search(S, lambda_range, N, method = 'eBIC', gamma = 0.3, latent 
     
     kwargs = {'S': S, 'Omega_0': np.eye(p), 'X_0': np.eye(p), 'tol': tol, 'rtol': rtol,\
               'verbose': False, 'measure': False}
+        
+    if lambda1_mask is not None:
+        kwargs['lambda1_mask'] = lambda1_mask
     
     if store_all:
         estimates = np.zeros((_L,_M,p,p))
