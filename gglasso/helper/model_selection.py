@@ -545,7 +545,7 @@ def single_grid_search(S, lambda_range, N, method = 'eBIC', gamma = 0.3, latent 
              
             AIC[j,m] = aic_single(S, sol['Theta'], N)
             for g in gammas:
-                BIC[g][j, m] = ebic_single(S, sol['Theta'], N, gamma = g)
+                BIC[g][j, m] = ebic_single(S, sol['Theta'], sol['L'], N, gamma = g)
             
             SP[j,m] = sparsity(sol['Theta'])
             
@@ -701,43 +701,48 @@ def aic_single(S, Theta, N):
 
 ################################################################
     
-def ebic(S, Theta, N, gamma = 0.5):
+def ebic(S, Theta, L, N, gamma = 0.5):
     """
     extended BIC after Drton et al.
     """
     if type(S) == dict:
-        ebic = ebic_dict(S, Theta, N, gamma)
+        ebic = ebic_dict(S, Theta, L, N, gamma)
     elif type(S) == np.ndarray:
         if len(S.shape) == 3:
-            ebic = ebic_array(S, Theta, N, gamma)
+            ebic = ebic_array(S, Theta, L, N, gamma)
         else:
-            ebic = ebic_single(S, Theta, N, gamma)
+            ebic = ebic_single(S, Theta, L, N, gamma)
     else:
         raise KeyError("Not a valid input type -- should be either dictionary or ndarray")
     
     return ebic
 
-def ebic_single(S, Theta, N, gamma):
+def ebic_single(S, Theta, L, N, gamma):
     (p,p) = S.shape
     assert isinstance(N, (int,float,np.integer,np.float))
-    
-    # count upper diagonal non-zero entries
-    E = (np.count_nonzero(Theta) - p)/2
-    bic = N*Sdot(S, Theta) - N*robust_logdet(Theta) + E*(np.log(N)+ 4*np.log(p)*gamma)
+
+    if L is not None:
+        rank = np.linalg.matrix_rank(L)
+        # count upper diagonal non-zero entries
+        E = (np.count_nonzero(Theta) - p)/2
+        bic = N*Sdot(S, (Theta - L)) - N*robust_logdet(Theta - L) + E*(np.log(N) + 4*np.log(p)*gamma) + p*rank
+    else:
+        E = (np.count_nonzero(Theta) - p) / 2
+        bic = N * Sdot(S, Theta) - N * robust_logdet(Theta) + E * (np.log(N) + 4 * np.log(p) * gamma)
     
     return bic
 
-def ebic_array(S, Theta, N, gamma):
+def ebic_array(S, Theta, L, N, gamma):
     (K,p,p) = S.shape   
     if isinstance(N, (int,float,np.integer,np.float)):
         N = np.ones(K) * N
         
     bic = 0
     for k in np.arange(K):
-        bic += ebic_single(S[k,:,:], Theta[k,:,:], N[k], gamma)
+        bic += ebic_single(S[k,:,:], Theta[k,:,:], L[k, :, :], N[k], gamma)
     return bic
 
-def ebic_dict(S, Theta, N, gamma):
+def ebic_dict(S, Theta, L, N, gamma):
     """
     S, Theta are dictionaries
     N is array of sample sizes
@@ -748,7 +753,7 @@ def ebic_dict(S, Theta, N, gamma):
     
     bic = 0
     for k in np.arange(K):
-        bic += ebic_single(S[k], Theta[k], N[k], gamma)
+        bic += ebic_single(S[k], Theta[k], L[k], N[k], gamma)
         
     return bic
         
