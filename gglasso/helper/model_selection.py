@@ -724,8 +724,8 @@ def ebic_single(S, Theta, L, N, gamma):
     if L is not None:
         rank = np.linalg.matrix_rank(L)
         # count upper diagonal non-zero entries
-        E = (np.count_nonzero(Theta) - p)/2
-        bic = N*Sdot(S, (Theta - L)) - N*robust_logdet(Theta - L) + E*(np.log(N) + 4*np.log(p)*gamma) + p*rank
+        E = (np.count_nonzero(Theta) - p)/2 + p*rank
+        bic = N*Sdot(S, Theta) - N*robust_logdet(Theta) + E*(np.log(N) + 4*np.log(p)*gamma)
     else:
         E = (np.count_nonzero(Theta) - p) / 2
         bic = N * Sdot(S, Theta) - N * robust_logdet(Theta) + E * (np.log(N) + 4 * np.log(p) * gamma)
