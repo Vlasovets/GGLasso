@@ -12,29 +12,9 @@ from typing import Optional
 from .ggl_helper import prox_od_1norm, phiplus, prox_rank_norm
 
 
-<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
-def ADMM_SGL(S: np.ndarray,
-             lambda1: float,
-             Omega_0: np.ndarray,
-             Theta_0: np.ndarray=np.array([]),
-             X_0: np.ndarray=np.array([]),
-             rho: float=1.,
-             max_iter: int=1000,
-             tol: float=1e-7,
-             rtol: float=1e-4,
-             stopping_criterion: str='boyd',
-             update_rho: bool=True,
-             verbose: bool=False,
-             measure: bool=False,
-             latent: bool=False,
-             mu1: Optional[float]=None,
-             lambda1_mask: Optional[np.ndarray]=None
-    ):
-=======
 def ADMM_SGL(S, lambda1, Omega_0, Theta_0=np.array([]), X_0=np.array([]),
              rho=1., max_iter=1000, tol=1e-7, rtol=1e-4, stopping_criterion='boyd',\
              update_rho=True, verbose=False, measure=False, latent=False, mu1=None, r: int=None, lambda1_mask=None):
->>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
     """
     This is an ADMM solver for the (Latent variable) Single Graphical Lasso problem (SGL).
     If ``latent=False``, this function solves
@@ -178,7 +158,10 @@ def ADMM_SGL(S, lambda1, Omega_0, Theta_0=np.array([]), X_0=np.array([]),
         if latent:
             C_t = Theta_t - X_t - Omega_t
             eigD1, eigQ1 = np.linalg.eigh(C_t)
-            L_t = prox_rank_norm(C_t, mu1/rho, D=eigD1, Q=eigQ1)
+            if r is None:
+                L_t = prox_rank_norm(C_t, mu1=mu1, rho=rho, D=eigD1, Q=eigQ1)
+            else:
+                L_t = prox_rank_norm(C_t, r=r, D=eigD1, Q=eigQ1)
 
         # X Update
         X_t = X_t + Omega_t - Theta_t + L_t
@@ -329,27 +312,9 @@ def kkt_stopping_criterion(Omega, Theta, L, X, S, lambda1, latent=False, mu1=Non
 ## BLOCK-WISE GRAPHICAL LASSO AFTER WITTEN ET AL.
 #######################################################
 
-<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
-def block_SGL(S: np.ndarray,
-              lambda1: float,
-              Omega_0: np.ndarray,
-              Theta_0: Optional[np.ndarray]=None,
-              X_0: Optional[np.ndarray]=None,
-              rho: float=1.,
-              max_iter: int=1000,
-              tol: float=1e-7,
-              rtol: float=1e-3,
-              stopping_criterion: str="boyd",
-              update_rho: bool=True,
-              verbose: bool=False,
-              measure: bool=False,
-              lambda1_mask: Optional[np.ndarray]=None
-    ):
-=======
 def block_SGL(S, lambda1, Omega_0, Theta_0=None, X_0=None, rho=1., max_iter=1000, 
               tol=1e-7, rtol=1e-3, stopping_criterion="boyd", r: int=None,
               update_rho=True, verbose=False, measure=False, lambda1_mask=None):
->>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
     """
     This is a wrapper for solving SGL problems on connected components of the solution and solving each block separately.
     See Witten, Friedman, Simon "New Insights for the Graphical Lasso" for details.
@@ -456,28 +421,10 @@ def block_SGL(S, lambda1, Omega_0, Theta_0=None, X_0=None, rho=1., max_iter=1000
             block_S = S[np.ix_(C, C)]          
             this_lambda1_mask = lambda1_mask[np.ix_(C, C)]
             
-<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
-            block_sol, block_info = ADMM_SGL(S=block_S,
-                                             lambda1=lambda1,
-                                             Omega_0=Omega_0[np.ix_(C, C)],
-                                             Theta_0=Theta_0[np.ix_(C, C)],
-                                             X_0=X_0[np.ix_(C, C)],
-                                             tol=tol,
-                                             rtol=rtol,
-                                             stopping_criterion=stopping_criterion,
-                                             update_rho=update_rho,
-                                             rho=rho,
-                                             max_iter=max_iter,
-                                             verbose=verbose,
-                                             measure=measure,
-                                             lambda1_mask=this_lambda1_mask
-            )
-=======
             block_sol, block_info = ADMM_SGL(S=block_S, lambda1=lambda1, Omega_0=Omega_0[np.ix_(C, C)],
                                              Theta_0=Theta_0[np.ix_(C, C)], X_0=X_0[np.ix_(C, C)], tol=tol, rtol=rtol,
                                              stopping_criterion=stopping_criterion, update_rho=update_rho, r=r,
                                              rho=rho, max_iter=max_iter, verbose=verbose, measure=measure, lambda1_mask=this_lambda1_mask)
->>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
 
             allOmega.append(block_sol['Omega'])
             allTheta.append(block_sol['Theta'])
