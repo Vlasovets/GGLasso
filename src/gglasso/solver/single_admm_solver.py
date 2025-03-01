@@ -12,6 +12,7 @@ from typing import Optional
 from .ggl_helper import prox_od_1norm, phiplus, prox_rank_norm
 
 
+<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
 def ADMM_SGL(S: np.ndarray,
              lambda1: float,
              Omega_0: np.ndarray,
@@ -29,6 +30,11 @@ def ADMM_SGL(S: np.ndarray,
              mu1: Optional[float]=None,
              lambda1_mask: Optional[np.ndarray]=None
     ):
+=======
+def ADMM_SGL(S, lambda1, Omega_0, Theta_0=np.array([]), X_0=np.array([]),
+             rho=1., max_iter=1000, tol=1e-7, rtol=1e-4, stopping_criterion='boyd',\
+             update_rho=True, verbose=False, measure=False, latent=False, mu1=None, r: int=None, lambda1_mask=None):
+>>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
     """
     This is an ADMM solver for the (Latent variable) Single Graphical Lasso problem (SGL).
     If ``latent=False``, this function solves
@@ -323,6 +329,7 @@ def kkt_stopping_criterion(Omega, Theta, L, X, S, lambda1, latent=False, mu1=Non
 ## BLOCK-WISE GRAPHICAL LASSO AFTER WITTEN ET AL.
 #######################################################
 
+<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
 def block_SGL(S: np.ndarray,
               lambda1: float,
               Omega_0: np.ndarray,
@@ -338,6 +345,11 @@ def block_SGL(S: np.ndarray,
               measure: bool=False,
               lambda1_mask: Optional[np.ndarray]=None
     ):
+=======
+def block_SGL(S, lambda1, Omega_0, Theta_0=None, X_0=None, rho=1., max_iter=1000, 
+              tol=1e-7, rtol=1e-3, stopping_criterion="boyd", r: int=None,
+              update_rho=True, verbose=False, measure=False, lambda1_mask=None):
+>>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
     """
     This is a wrapper for solving SGL problems on connected components of the solution and solving each block separately.
     See Witten, Friedman, Simon "New Insights for the Graphical Lasso" for details.
@@ -387,6 +399,8 @@ def block_SGL(S: np.ndarray,
         verbosity of the solver. The default is False.
     measure : boolean, optional
         turn on/off measurements of runtime per iteration. The default is False.
+    r : int, positive, optional
+        Rank constraint for the low-rank component L_t. If specified, L_t is updated to have at most rank r instead of using nuclear norm regularization. Default is None.
     lambda1_mask : array (p,p), non-negative, symmetric, optional
         A mask for the regularization parameter. If specified, the problem is solved with the element-wise regularization strength ``lambda1 * lambda1_mask``.
     
@@ -442,6 +456,7 @@ def block_SGL(S: np.ndarray,
             block_S = S[np.ix_(C, C)]          
             this_lambda1_mask = lambda1_mask[np.ix_(C, C)]
             
+<<<<<<< Updated upstream:src/gglasso/solver/single_admm_solver.py
             block_sol, block_info = ADMM_SGL(S=block_S,
                                              lambda1=lambda1,
                                              Omega_0=Omega_0[np.ix_(C, C)],
@@ -457,6 +472,12 @@ def block_SGL(S: np.ndarray,
                                              measure=measure,
                                              lambda1_mask=this_lambda1_mask
             )
+=======
+            block_sol, block_info = ADMM_SGL(S=block_S, lambda1=lambda1, Omega_0=Omega_0[np.ix_(C, C)],
+                                             Theta_0=Theta_0[np.ix_(C, C)], X_0=X_0[np.ix_(C, C)], tol=tol, rtol=rtol,
+                                             stopping_criterion=stopping_criterion, update_rho=update_rho, r=r,
+                                             rho=rho, max_iter=max_iter, verbose=verbose, measure=measure, lambda1_mask=this_lambda1_mask)
+>>>>>>> Stashed changes:gglasso/solver/single_admm_solver.py
 
             allOmega.append(block_sol['Omega'])
             allTheta.append(block_sol['Theta'])

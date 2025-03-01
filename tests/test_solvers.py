@@ -134,7 +134,7 @@ def test_block_SGL():
     
     Omega_0 = np.eye(p)
     
-    full_sol,_ = ADMM_SGL(S, lambda1, Omega_0, tol = 1e-7, rtol = 1e-5, verbose = False)
+    full_sol,_ = ADMM_SGL(S, lambda1, Omega_0, r=None, tol = 1e-7, rtol = 1e-5, verbose = False)
     
     numC, allC =  get_connected_components(S, lambda1)
     assert numC > 1, "Test is redundant if only one connected component"

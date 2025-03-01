@@ -198,11 +198,15 @@ def ADMM_MGL(S: np.ndarray,
             C_t = Theta_t - X_t - Omega_t
             eigD, eigQ = np.linalg.eigh(C_t)
             for k in np.arange(K):
+<<<<<<< Updated upstream:src/gglasso/solver/admm_solver.py
                 L_t[k] = prox_rank_norm(C_t[k,:,:],
                                         mu1[k]/rho,
                                         D=eigD[k,:],
                                         Q = eigQ[k,:,:]
                 )
+=======
+                L_t[k] = prox_rank_norm(C_t[k,:,:], beta=mu1[k]/rho, D = eigD[k,:], Q = eigQ[k,:,:])
+>>>>>>> Stashed changes:gglasso/solver/admm_solver.py
                 
         # X Update
         X_t += Omega_t - Theta_t + L_t

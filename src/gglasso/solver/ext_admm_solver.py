@@ -211,7 +211,11 @@ def ext_ADMM_MGL(S: dict,
                 C_t = Theta_t[k] - X0_t[k] - Omega_t[k]
                 C_t = (C_t.T + C_t)/2
                 eigD, eigQ = np.linalg.eigh(C_t)
+<<<<<<< Updated upstream:src/gglasso/solver/ext_admm_solver.py
                 L_t[k] = prox_rank_norm(C_t, mu1[k]/rho, D=eigD, Q=eigQ)
+=======
+                L_t[k] = prox_rank_norm(C_t, beta=mu1[k]/rho, D = eigD, Q = eigQ)
+>>>>>>> Stashed changes:gglasso/solver/ext_admm_solver.py
         
         # Lambda Update
         Lambda_t_1 = Lambda_t.copy()
