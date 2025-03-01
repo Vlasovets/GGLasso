@@ -2,12 +2,22 @@
 author: Fabian Schaipp
 """
 import numpy as np
+import pandas as pd
 from numpy.testing import assert_array_almost_equal, assert_almost_equal
 
 from gglasso.helper.data_generation import time_varying_power_network, group_power_network, sample_covariance_matrix, generate_precision_matrix
 from gglasso.problem import glasso_problem
-from gglasso.helper.ext_admm_helper import construct_trivial_G
+from gglasso.helper.ext_admm_helper import construct_trivial_G, create_group_array, construct_indexer, check_G
 from gglasso.helper.basic_linalg import scale_array_by_diagonal
+
+
+##########################################
+# NOTE
+# Numpy can not produce identical random numbers across versions/machines (even for same seed)
+# Particularly the multivariate_normal function is not deterministic
+# Hence, for now we do not assert on fixed outcomes.
+# see: https://github.com/numpy/numpy/issues/22975
+##########################################
 
 p = 20
 K = 3
@@ -57,9 +67,6 @@ def test_GGL():
     S, samples = sample_covariance_matrix(Sigma, N, seed=123)
     P = template_problem_MGL(S, N, reg = 'GGL', latent = False)   
     
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.01
-    assert_almost_equal(P.solution.ebic_, 69250.30820755142)
     return
 
 def test_GGL_latent():
@@ -67,10 +74,6 @@ def test_GGL_latent():
     S, samples = sample_covariance_matrix(Sigma, N, seed=123)
     P = template_problem_MGL(S, N, reg = 'GGL', latent = True)
     
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.01
-    assert_array_almost_equal(P.reg_params['mu1'], np.ones(K))
-    assert_almost_equal(P.solution.ebic_, 69250.30820755142)
     return
 
 def test_FGL():
@@ -78,9 +81,6 @@ def test_FGL():
     S, samples = sample_covariance_matrix(Sigma, N, seed=123)
     P = template_problem_MGL(S, N, reg = 'FGL', latent = False)
     
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.01
-    assert_almost_equal(P.solution.ebic_, 67530.17571389768)
     return
 
 def test_FGL_latent():
@@ -88,10 +88,6 @@ def test_FGL_latent():
     S, samples = sample_covariance_matrix(Sigma, N, seed=123)
     P = template_problem_MGL(S, N, reg = 'FGL', latent = True)
     
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.01
-    assert_array_almost_equal(P.reg_params['mu1'], np.ones(K))
-    assert_almost_equal(P.solution.ebic_, 67530.17571389768)
     return
 
 def test_GGL_ext():
@@ -104,9 +100,6 @@ def test_GGL_ext():
         
     G = construct_trivial_G(p, K)
     P = template_problem_MGL(Sdict, N, reg = 'GGL', latent = False, G = G)
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.001
-    assert_almost_equal(P.solution.ebic_, 64920.48000118762)
     return
 
 def test_GGL_ext_latent():
@@ -120,10 +113,28 @@ def test_GGL_ext_latent():
     G = construct_trivial_G(p, K)
     P = template_problem_MGL(Sdict, N, reg = 'GGL', latent = True, G = G)
     
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['lambda2'] == 0.001
-    assert_array_almost_equal(P.reg_params['mu1'], np.ones(K))
-    assert_almost_equal(P.solution.ebic_, 64920.480001187614)
+    return
+
+def test_GGL_ext_nonuniform():
+    K = 4
+    p = 20
+    N = 200
+    
+    all_obs = dict()
+    S = dict()
+    for k in np.arange(K):
+        X = np.random.rand(2+k,N)
+        all_obs[k] = pd.DataFrame(X)
+        S[k] = np.cov(all_obs[k], bias = True)
+        
+    ix_exist, ix_location = construct_indexer(list(all_obs.values()))
+    G = create_group_array(ix_exist, ix_location, min_inst = 2)
+    check_G(G, p)
+    P = glasso_problem(S = S, N = N, reg = "GGL", reg_params = None, latent = False, G = G, do_scaling = True)
+    reg_params = {'lambda1': 0.01, 'lambda2': 0.001}
+    P.set_reg_params(reg_params)
+    P.solve(verbose = True)
+    
     return
 
 ###############################################################
@@ -158,10 +169,6 @@ def test_SGL():
     S, samples = sample_covariance_matrix(Sigma, N, seed = 1234)
     P = template_problem_SGL(S, N, latent = False)
     
-    first_row = np.zeros(p); first_row[:2] = np.array([0.91903186, 0.11891509])
-    assert_array_almost_equal(P.solution.precision_[0,:], first_row)
-    
-    assert P.reg_params['lambda1'] == 0.1
     return
     
 def test_SGL_latent():
@@ -169,12 +176,6 @@ def test_SGL_latent():
     S, samples = sample_covariance_matrix(Sigma, N, seed = 2345)
     P = template_problem_SGL(S, N, latent = True)
     
-    first_row = np.zeros(p); first_row[:3] = np.array([0.94395251,  0.13135248,  0.00569105])
-    assert_array_almost_equal(P.solution.precision_[0,:], first_row)
-    
-    assert P.reg_params['lambda1'] == 0.1
-    assert P.reg_params['mu1'] == 46.4158883361278
-      
     return
 
 ################
@@ -229,17 +230,20 @@ def template_lambda1_mask_SGL(latent=False):
     lambda1_mask = 0.5 + 0.5*rng.rand(p,p)
     lambda1_mask = 0.5*(lambda1_mask + lambda1_mask.T)
     
-    model_select_params= {'lambda1_mask': lambda1_mask}
+    model_select_params= {'lambda1_mask': lambda1_mask, 'lambda1_range': np.logspace(-2,0,10)}
 
-    P = glasso_problem(S = S, N = N, reg = None, latent = False)
+    P = glasso_problem(S = S, N = N, reg = None, latent = latent)
     P.set_modelselect_params(model_select_params)
 
     print(P.modelselect_params)
     P.model_selection(modelselect_params = None, method = 'eBIC', gamma = 0.1)    
     print(P.reg_params)
     
-    assert_almost_equal(P.reg_params['lambda1'], 0.2154434690031884)
-        
+    if not latent:
+        assert_almost_equal(P.reg_params['lambda1'], 0.1291549665014884)
+    else:
+         assert_almost_equal(P.reg_params['lambda1'], 0.1291549665014884)
+         
     return
 
 def test_lambda1_mask():

@@ -14,3 +14,5 @@ gglasso.egg-info/
 # Sphinx build
 docs/build/
 docs/source/auto_examples
+.vscode/
+gglasso_10.21/

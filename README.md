@@ -2,7 +2,6 @@
 
 [![PyPI version fury.io](https://badge.fury.io/py/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
 [![PyPI license](https://img.shields.io/pypi/l/gglasso.svg)](https://pypi.python.org/pypi/gglasso/)
-[![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/gglasso/badge/?version=latest)](http://gglasso.readthedocs.io/?badge=latest)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.03865/status.svg)](https://doi.org/10.21105/joss.03865)
 [![arXiv](https://img.shields.io/badge/arXiv-2011.00898-b31b1b.svg)](https://arxiv.org/abs/2110.10521)
@@ -26,28 +25,23 @@ or
     conda install -c conda-forge gglasso
 
 
-### Install from source
+### Developer installation
 
-Alternatively, you can install the package from source using the following commands:
-
-    git clone https://github.com/fabian-sp/GGLasso.git
-    pip install -r requirements.txt
-    python setup.py
-
-Test your installation with 
-
-    pytest gglasso/ -v
-
-
-### Advanced options
-
-If you want to create a conda environment with full development dependencies (for building docs, testing etc), run:
+If you want to create a conda environment with full development dependencies (for building docs, testing,...), run:
 
 	conda env create -f environment.yml
 
-If you wish to install `gglasso` in developer mode, i.e. not having to reinstall `gglasso` everytime the source code changes (either by remote or local changes), run
+To install `gglasso` in developer mode run
 
-    python setup.py clean --all develop clean --all
+    python -m pip install --editable .
+
+
+Test your installation with 
+
+    pytest tests/ -v
+
+
+
 
 ## The `glasso_problem` class
 
