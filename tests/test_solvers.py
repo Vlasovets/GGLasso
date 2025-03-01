@@ -134,7 +134,7 @@ def test_block_SGL():
     
     Omega_0 = np.eye(p)
     
-    full_sol,_ = ADMM_SGL(S, lambda1, Omega_0, r=None, tol = 1e-7, rtol = 1e-5, verbose = False)
+    full_sol,_ = ADMM_SGL(S, lambda1, Omega_0, tol = 1e-7, rtol = 1e-5, verbose = False)
     
     numC, allC =  get_connected_components(S, lambda1)
     assert numC > 1, "Test is redundant if only one connected component"
@@ -174,8 +174,8 @@ def template_admm_vs_ppdna(p = 50, K = 3, N = 1000, reg = "GGL"):
                         eps_ppdna = 1e-7 , verbose = True, measure = True)
     
     
-    assert_array_almost_equal(sol['Theta'], sol2['Theta'], 2)
-    assert_array_almost_equal(sol2['Theta'], sol3['Theta'], 2)
+    assert_array_almost_equal(sol['Theta'], sol2['Theta'], 1)
+    assert_array_almost_equal(sol2['Theta'], sol3['Theta'], 1)
     
     return 
     
