@@ -14,38 +14,35 @@ def prox_1norm(v, l):
     return np.sign(v) * np.maximum(np.abs(v) - l, 0.)
     
 @njit() 
-def prox_od_1norm(A, l):
+def prox_od_1norm(A, l, diag=True):
     """
     calculates the prox of the off-diagonal 1norm at a point A
+
+    diag : bool, optional (default=False)
+    If True, preserves the diagonal elements of A.
+    If False, applies soft-thresholding to all elements.
+
     """    
-    (d1, d2) = A.shape
+    (d1,d2) = A.shape
     res = np.sign(A) * np.maximum(np.abs(A) - l, 0.)
-    
-    for i in np.arange(np.minimum(d1, d2)):
-        res[i,i] = A[i,i]
+
+    if diag:
+        for i in np.arange(np.minimum(d1,d2)):
+            res[i,i] = A[i,i]
     
     return res
 
-<<<<<<< Updated upstream:src/gglasso/solver/ggl_helper.py
-def prox_rank_norm(A, beta, D=np.array([]), Q=np.array([])):
-=======
 def prox_rank_norm(A, beta=None, r=None, D = np.array([]), Q = np.array([])):
->>>>>>> Stashed changes:gglasso/solver/ggl_helper.py
 
     if len(D) != A.shape[0]:
         D, Q = np.linalg.eigh(A)
         print("Single eigendecomposition is executed in prox_rank_norm")
-<<<<<<< Updated upstream:src/gglasso/solver/ggl_helper.py
-    
-    B = (Q * np.maximum(D-beta, 0.))@Q.T
-=======
 
     if r is None:
         B = (Q * np.maximum(D-beta, 0.))@Q.T
     else:
         beta = D[-(r+1)] ### largest eigenvalue corresponding to rank r
         B = (Q * np.maximum(D-beta, 0.))@Q.T ### line 78 https://github.com/zdk123/SpiecEasi/blob/lowrank/src/ADMM.cpp#L71
->>>>>>> Stashed changes:gglasso/solver/ggl_helper.py
     return B
 
 @njit()          
